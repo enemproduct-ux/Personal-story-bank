@@ -108,13 +108,39 @@ textarea{ resize:vertical; min-height:90px; line-height:1.5; }
 .tag:hover{ border-color:var(--accent); }
 .tag[aria-pressed="true"]{ background:var(--tag-active-bg); color:var(--tag-active-ink); border-color:var(--tag-active-bg); }
 
+.date-filter{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.date-filter-label, .date-filter-sep{
+  font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:.02em; color:var(--ink-soft);
+}
+.date-filter input[type=month]{
+  background:var(--paper-raised); border:1px solid var(--line); border-radius:8px;
+  padding:4px 8px; font-size:12.5px; color:var(--ink); font-family:'IBM Plex Mono',monospace;
+}
+.date-filter input[type=month]:hover{ border-color:var(--accent); }
+#clear-dates{
+  border:none; background:none; color:var(--ink-soft); font-size:13px; padding:2px 4px;
+  font-family:'IBM Plex Mono',monospace; cursor:pointer;
+}
+#clear-dates:hover{ color:var(--ink); }
+
 .toolbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
 #count{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); }
 .toolbar-actions{ display:flex; gap:8px; }
 
 .deck{ display:flex; flex-direction:column; gap:10px; }
-.card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+.card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; overflow:hidden; position:relative; }
 .card[hidden]{ display:none; }
+
+/* When the story occurred — pinned to the card's bottom-right so it shows
+   in both the collapsed and expanded states. */
+.occurred{
+  position:absolute; right:12px; bottom:8px;
+  font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:.03em;
+  color:var(--ink-soft); background:var(--tag-bg); padding:2px 8px; border-radius:99px;
+}
+.card.has-date summary{ padding-bottom:30px; }
+.card.has-date[open] summary{ padding-bottom:14px; }
+.card.has-date[open] .body{ padding-bottom:36px; }
 
 summary{ list-style:none; cursor:pointer; padding:14px 16px; display:grid; grid-template-columns:1fr auto auto; align-items:start; gap:12px; }
 summary::-webkit-details-marker{ display:none; }

@@ -35,12 +35,16 @@
   var countEl = document.getElementById("count");
   var searchEl = document.getElementById("search");
   var clearBtn = document.getElementById("clear-search");
+  var dateFromEl = document.getElementById("date-from");
+  var dateToEl = document.getElementById("date-to");
+  var clearDatesBtn = document.getElementById("clear-dates");
 
   var modalBackdrop = document.getElementById("modal-backdrop");
   var modalTitle = document.getElementById("modal-title");
   var modalMsg = document.getElementById("modal-msg");
   var fTitle = document.getElementById("f-title");
   var fTags = document.getElementById("f-tags");
+  var fOccurred = document.getElementById("f-occurred");
   var fAnswers = document.getElementById("f-answers");
   var fAnchor = document.getElementById("f-anchor");
   var fScript = document.getElementById("f-script");
@@ -154,6 +158,15 @@
     return escaped.replace(/\*\*(.+?)\*\*/g, "<mark>$1</mark>");
   }
 
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // "2023-03" → "Mar 2023"
+  function monthLabel(ym) {
+    var m = /^(\d{4})-(\d{2})$/.exec(ym || "");
+    if (!m) return "";
+    var idx = parseInt(m[2], 10) - 1;
+    return (MONTHS[idx] || m[2]) + " " + m[1];
+  }
+
   function allTags() {
     var set = {};
     stories.forEach(function (s) { (s.tags || []).forEach(function (t) { set[t] = true; }); });
@@ -181,6 +194,9 @@
   function render() {
     var q = searchEl.value.trim().toLowerCase();
     clearBtn.style.display = q ? "inline-block" : "none";
+    var dFrom = dateFromEl.value; // "YYYY-MM" or ""
+    var dTo = dateToEl.value;
+    clearDatesBtn.hidden = !(dFrom || dTo);
 
     Array.prototype.forEach.call(tagbar.children, function (b) {
       b.setAttribute("aria-pressed", String(activeTags.indexOf(b.textContent) !== -1));
@@ -190,20 +206,29 @@
     var shown = 0;
 
     stories.forEach(function (story) {
-      var matchesTag = activeTags.length === 0 || activeTags.some(function (t) {
+      var matchesTag = activeTags.length === 0 || activeTags.every(function (t) {
         return (story.tags || []).indexOf(t) !== -1;
       });
       var haystack = [story.title, (story.tags || []).join(" "), story.answers_for, story.anchor, story.script]
         .join(" ").toLowerCase();
       var matchesSearch = !q || haystack.indexOf(q) !== -1;
-      if (!(matchesTag && matchesSearch)) return;
+      // "YYYY-MM" strings compare correctly as text. A story with no
+      // occurrence date is hidden while a date filter is active.
+      var matchesDate = (!dFrom && !dTo) || (story.occurred_on &&
+        (!dFrom || story.occurred_on >= dFrom) &&
+        (!dTo || story.occurred_on <= dTo));
+      if (!(matchesTag && matchesSearch && matchesDate)) return;
       shown++;
       deck.appendChild(renderCard(story));
     });
 
     empty.hidden = shown !== 0;
+    var dateNote = "";
+    if (dFrom || dTo) {
+      dateNote = " · occurred " + (dFrom ? monthLabel(dFrom) : "…") + " – " + (dTo ? monthLabel(dTo) : "…");
+    }
     countEl.textContent = shown + " of " + stories.length + " stories" +
-      (activeTags.length ? " · " + activeTags.join(", ") : "") + (q ? " · “" + q + "”" : "");
+      (activeTags.length ? " · " + activeTags.join(", ") : "") + dateNote + (q ? " · “" + q + "”" : "");
   }
 
   function renderCard(story) {
@@ -271,10 +296,26 @@
 
     card.appendChild(summary);
     card.appendChild(body);
+
+    if (story.occurred_on) {
+      var when = document.createElement("span");
+      when.className = "occurred";
+      when.textContent = monthLabel(story.occurred_on);
+      when.title = "When this story took place (not when it was added)";
+      card.classList.add("has-date");
+      card.appendChild(when);
+    }
     return card;
   }
 
   searchEl.addEventListener("input", render);
+  dateFromEl.addEventListener("change", render);
+  dateToEl.addEventListener("change", render);
+  clearDatesBtn.addEventListener("click", function () {
+    dateFromEl.value = "";
+    dateToEl.value = "";
+    render();
+  });
   clearBtn.addEventListener("click", function () {
     searchEl.value = "";
     searchEl.focus();
@@ -293,6 +334,7 @@
     modalMsg.textContent = "";
     fTitle.value = story ? story.title : "";
     fTags.value = story ? (story.tags || []).join(", ") : "";
+    fOccurred.value = story ? story.occurred_on || "" : "";
     fAnswers.value = story ? story.answers_for || "" : "";
     fAnchor.value = story ? story.anchor || "" : "";
     fScript.value = story ? story.script || "" : "";
@@ -311,6 +353,7 @@
     var payload = {
       title: title,
       tags: fTags.value.split(",").map(function (t) { return t.trim(); }).filter(Boolean),
+      occurred_on: fOccurred.value || null,
       answers_for: fAnswers.value.trim(),
       anchor: fAnchor.value.trim(),
       script: fScript.value.trim()
@@ -342,7 +385,7 @@
   // ---------- Import / export ----------
   document.getElementById("btn-export").addEventListener("click", function () {
     var exportable = stories.map(function (s) {
-      return { title: s.title, tags: s.tags, answers_for: s.answers_for, anchor: s.anchor, script: s.script };
+      return { title: s.title, tags: s.tags, occurred_on: s.occurred_on || null, answers_for: s.answers_for, anchor: s.anchor, script: s.script };
     });
     var blob = new Blob([JSON.stringify(exportable, null, 2)], { type: "application/json" });
     var url = URL.createObjectURL(blob);
@@ -372,6 +415,7 @@
             user_id: uid,
             title: it.title || "Untitled",
             tags: Array.isArray(it.tags) ? it.tags : [],
+            occurred_on: /^\d{4}-\d{2}$/.test(it.occurred_on || "") ? it.occurred_on : null,
             answers_for: it.answers_for || "",
             anchor: it.anchor || "",
             script: it.script || ""

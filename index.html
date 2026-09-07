@@ -54,6 +54,13 @@
         <button id="clear-search" type="button" aria-label="Clear search">clear</button>
       </div>
       <div class="tags" id="tagbar" role="group" aria-label="Filter by category"></div>
+      <div class="date-filter" title="Filter by when the story took place — not when it was added here">
+        <span class="date-filter-label">Occurred between</span>
+        <input type="month" id="date-from" aria-label="From month">
+        <span class="date-filter-sep">and</span>
+        <input type="month" id="date-to" aria-label="To month">
+        <button id="clear-dates" type="button" hidden>clear</button>
+      </div>
       <div class="toolbar">
         <div id="count"></div>
         <div class="toolbar-actions">
@@ -91,6 +98,11 @@
       <label for="f-tags">Categories</label>
       <input type="text" id="f-tags" placeholder="Discovery, Stakeholder Conflict">
       <div class="tag-input-hint">Comma-separated. New categories are created automatically.</div>
+    </div>
+    <div class="field">
+      <label for="f-occurred">When did this happen? (month/year)</label>
+      <input type="month" id="f-occurred">
+      <div class="tag-input-hint">When the story took place — not when you're adding it here. Optional.</div>
     </div>
     <div class="field">
       <label for="f-answers">Answers questions like…</label>

@@ -8,6 +8,8 @@ create table if not exists stories (
   user_id uuid not null references auth.users(id) on delete cascade,
   title text not null,
   tags text[] not null default '{}',
+  -- When the story took place ("YYYY-MM"), not when it was added to the bank.
+  occurred_on text check (occurred_on is null or occurred_on ~ '^\d{4}-\d{2}$'),
   answers_for text not null default '',
   anchor text not null default '',
   script text not null default '',
@@ -16,6 +18,10 @@ create table if not exists stories (
 );
 
 create index if not exists stories_user_id_idx on stories(user_id);
+
+-- Migration for databases created before occurred_on existed (safe to re-run).
+alter table stories add column if not exists occurred_on text
+  check (occurred_on is null or occurred_on ~ '^\d{4}-\d{2}$');
 
 alter table stories enable row level security;
 
