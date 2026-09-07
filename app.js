@@ -35,8 +35,8 @@
   var countEl = document.getElementById("count");
   var searchEl = document.getElementById("search");
   var clearBtn = document.getElementById("clear-search");
-  var dateFromEl = document.getElementById("date-from");
-  var dateToEl = document.getElementById("date-to");
+  var dateFromPicker = createMonthPicker(document.getElementById("date-from"), "from", function () { render(); });
+  var dateToPicker = createMonthPicker(document.getElementById("date-to"), "to", function () { render(); });
   var clearDatesBtn = document.getElementById("clear-dates");
 
   var modalBackdrop = document.getElementById("modal-backdrop");
@@ -44,7 +44,7 @@
   var modalMsg = document.getElementById("modal-msg");
   var fTitle = document.getElementById("f-title");
   var fTags = document.getElementById("f-tags");
-  var fOccurred = document.getElementById("f-occurred");
+  var occurredPicker = createMonthPicker(document.getElementById("f-occurred"), "month / year", null);
   var fAnswers = document.getElementById("f-answers");
   var fAnchor = document.getElementById("f-anchor");
   var fScript = document.getElementById("f-script");
@@ -167,6 +167,102 @@
     return (MONTHS[idx] || m[2]) + " " + m[1];
   }
 
+  // A button that shows its placeholder (grey italic) when empty, "Mar 2024"
+  // when set, and opens a small ‹ year › + month-grid popover on click.
+  function createMonthPicker(btn, placeholder, onChange) {
+    var value = "";
+    var pop = null;
+    var viewYear = new Date().getFullYear();
+    var maxYear = new Date().getFullYear();
+
+    function fmt() {
+      if (value) { btn.textContent = monthLabel(value); btn.classList.remove("placeholder"); }
+      else { btn.textContent = placeholder; btn.classList.add("placeholder"); }
+    }
+
+    function close() {
+      if (!pop) return;
+      pop.remove();
+      pop = null;
+      document.removeEventListener("click", onDocClick, true);
+      document.removeEventListener("keydown", onKey, true);
+    }
+    function onDocClick(e) { if (!pop.contains(e.target) && e.target !== btn) close(); }
+    function onKey(e) { if (e.key === "Escape") close(); }
+
+    function build() {
+      pop.innerHTML = "";
+      var head = document.createElement("div");
+      head.className = "month-pop-head";
+      var prev = document.createElement("button");
+      prev.type = "button";
+      prev.textContent = "‹";
+      prev.addEventListener("click", function () { viewYear--; build(); });
+      var yearLbl = document.createElement("span");
+      yearLbl.textContent = viewYear;
+      var next = document.createElement("button");
+      next.type = "button";
+      next.textContent = "›";
+      next.disabled = viewYear >= maxYear;
+      next.addEventListener("click", function () { viewYear++; build(); });
+      head.appendChild(prev); head.appendChild(yearLbl); head.appendChild(next);
+      pop.appendChild(head);
+
+      var grid = document.createElement("div");
+      grid.className = "month-grid";
+      MONTHS.forEach(function (name, i) {
+        var m = document.createElement("button");
+        m.type = "button";
+        m.textContent = name;
+        var ym = viewYear + "-" + String(i + 1).padStart(2, "0");
+        if (ym === value) m.className = "selected";
+        m.addEventListener("click", function () {
+          value = ym;
+          fmt();
+          close();
+          if (onChange) onChange();
+        });
+        grid.appendChild(m);
+      });
+      pop.appendChild(grid);
+
+      if (value) {
+        var clear = document.createElement("button");
+        clear.type = "button";
+        clear.className = "month-pop-clear";
+        clear.textContent = "clear";
+        clear.addEventListener("click", function () {
+          value = "";
+          fmt();
+          close();
+          if (onChange) onChange();
+        });
+        pop.appendChild(clear);
+      }
+    }
+
+    btn.addEventListener("click", function () {
+      if (pop) { close(); return; }
+      viewYear = value ? parseInt(value.slice(0, 4), 10) : new Date().getFullYear();
+      pop = document.createElement("div");
+      pop.className = "month-pop";
+      build();
+      document.body.appendChild(pop);
+      var r = btn.getBoundingClientRect();
+      var left = Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 8);
+      pop.style.left = Math.max(8, left) + "px";
+      pop.style.top = (r.bottom + window.scrollY + 6) + "px";
+      document.addEventListener("click", onDocClick, true);
+      document.addEventListener("keydown", onKey, true);
+    });
+
+    fmt();
+    return {
+      get: function () { return value; },
+      set: function (v) { value = v || ""; fmt(); close(); }
+    };
+  }
+
   function allTags() {
     var set = {};
     stories.forEach(function (s) { (s.tags || []).forEach(function (t) { set[t] = true; }); });
@@ -194,8 +290,8 @@
   function render() {
     var q = searchEl.value.trim().toLowerCase();
     clearBtn.style.display = q ? "inline-block" : "none";
-    var dFrom = dateFromEl.value; // "YYYY-MM" or ""
-    var dTo = dateToEl.value;
+    var dFrom = dateFromPicker.get(); // "YYYY-MM" or ""
+    var dTo = dateToPicker.get();
     clearDatesBtn.hidden = !(dFrom || dTo);
 
     Array.prototype.forEach.call(tagbar.children, function (b) {
@@ -309,11 +405,9 @@
   }
 
   searchEl.addEventListener("input", render);
-  dateFromEl.addEventListener("change", render);
-  dateToEl.addEventListener("change", render);
   clearDatesBtn.addEventListener("click", function () {
-    dateFromEl.value = "";
-    dateToEl.value = "";
+    dateFromPicker.set("");
+    dateToPicker.set("");
     render();
   });
   clearBtn.addEventListener("click", function () {
@@ -334,7 +428,7 @@
     modalMsg.textContent = "";
     fTitle.value = story ? story.title : "";
     fTags.value = story ? (story.tags || []).join(", ") : "";
-    fOccurred.value = story ? story.occurred_on || "" : "";
+    occurredPicker.set(story ? story.occurred_on || "" : "");
     fAnswers.value = story ? story.answers_for || "" : "";
     fAnchor.value = story ? story.anchor || "" : "";
     fScript.value = story ? story.script || "" : "";
@@ -353,7 +447,7 @@
     var payload = {
       title: title,
       tags: fTags.value.split(",").map(function (t) { return t.trim(); }).filter(Boolean),
-      occurred_on: fOccurred.value || null,
+      occurred_on: occurredPicker.get() || null,
       answers_for: fAnswers.value.trim(),
       anchor: fAnchor.value.trim(),
       script: fScript.value.trim()
