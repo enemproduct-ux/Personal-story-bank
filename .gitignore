@@ -1,0 +1,9 @@
+# Per-deployment secrets — copy config.example.js to config.js and fill in
+config.js
+
+# Personal data — never commit real stories to this public repo
+my-stories-import.json
+story-bank-export.json
+
+# macOS
+.DS_Store
