@@ -48,10 +48,19 @@
 
   // ---------- State ----------
   var stories = [];
-  var activeTag = null;
+  var activeTags = [];
   var editingId = null; // null = adding new
 
-  try { activeTag = localStorage.getItem("storybank-active-tag") || null; } catch (e) {}
+  try {
+    var savedTags = localStorage.getItem("storybank-active-tags");
+    if (savedTags) {
+      activeTags = JSON.parse(savedTags);
+    } else {
+      // Migrate from the old single-tag key
+      var oldTag = localStorage.getItem("storybank-active-tag");
+      if (oldTag) activeTags = [oldTag];
+    }
+  } catch (e) { activeTags = []; }
 
   // ---------- Auth wiring ----------
   function setAuthMsg(text, kind) {
@@ -158,10 +167,11 @@
       b.className = "tag";
       b.type = "button";
       b.textContent = cat;
-      b.setAttribute("aria-pressed", String(cat === activeTag));
+      b.setAttribute("aria-pressed", String(activeTags.indexOf(cat) !== -1));
       b.addEventListener("click", function () {
-        activeTag = activeTag === cat ? null : cat;
-        try { localStorage.setItem("storybank-active-tag", activeTag || ""); } catch (e) {}
+        var i = activeTags.indexOf(cat);
+        if (i === -1) activeTags.push(cat); else activeTags.splice(i, 1);
+        try { localStorage.setItem("storybank-active-tags", JSON.stringify(activeTags)); } catch (e) {}
         render();
       });
       tagbar.appendChild(b);
@@ -173,14 +183,16 @@
     clearBtn.style.display = q ? "inline-block" : "none";
 
     Array.prototype.forEach.call(tagbar.children, function (b) {
-      b.setAttribute("aria-pressed", String(b.textContent === activeTag));
+      b.setAttribute("aria-pressed", String(activeTags.indexOf(b.textContent) !== -1));
     });
 
     deck.innerHTML = "";
     var shown = 0;
 
     stories.forEach(function (story) {
-      var matchesTag = !activeTag || (story.tags || []).indexOf(activeTag) !== -1;
+      var matchesTag = activeTags.length === 0 || activeTags.some(function (t) {
+        return (story.tags || []).indexOf(t) !== -1;
+      });
       var haystack = [story.title, (story.tags || []).join(" "), story.answers_for, story.anchor, story.script]
         .join(" ").toLowerCase();
       var matchesSearch = !q || haystack.indexOf(q) !== -1;
@@ -191,7 +203,7 @@
 
     empty.hidden = shown !== 0;
     countEl.textContent = shown + " of " + stories.length + " stories" +
-      (activeTag ? " · " + activeTag : "") + (q ? " · “" + q + "”" : "");
+      (activeTags.length ? " · " + activeTags.join(", ") : "") + (q ? " · “" + q + "”" : "");
   }
 
   function renderCard(story) {
