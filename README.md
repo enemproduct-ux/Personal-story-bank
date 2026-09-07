@@ -23,6 +23,13 @@ Netlify, or Vercel if you want a stable link you can open from any device.
 
 ## Setup (about 10 minutes)
 
+0. **Get the code.** Click **Fork** on GitHub if you want your own copy to
+   push changes to, or just clone it directly:
+   ```bash
+   git clone https://github.com/enemproduct-ux/Personal-story-bank.git
+   cd Personal-story-bank
+   ```
+
 1. **Create a free Supabase project.** Go to [supabase.com](https://supabase.com),
    sign up, and create a new project. Pick any region and set a database
    password (you won't need it day to day).
