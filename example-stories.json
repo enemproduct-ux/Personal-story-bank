@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Example: The metric nobody trusted",
+    "tags": ["Discovery", "Metrics"],
+    "answers_for": "a metric you owned and moved · data-driven decisions",
+    "anchor": "dashboard said adoption was flat → **customer calls** told a different story → found the real blocker → **adoption up 30%** in a quarter",
+    "script": "This is placeholder text — replace it with a real story. Write it the way you'd actually say it out loud: what was the situation, what was the tension or decision, what did you specifically do, and what happened as a result. Wrap the 3-5 words you'd want to glance at mid-sentence in **double asterisks** — they'll render as highlighted keywords in the card, both here and in the collapsed anchor line above."
+  },
+  {
+    "title": "Example: Saying no to a stakeholder",
+    "tags": ["Stakeholder Conflict", "Trade-offs"],
+    "answers_for": "disagreeing with a senior stakeholder · saying no to a feature request",
+    "anchor": "exec wanted **feature X** shipped fast → data showed it solved the wrong problem → pushed back with evidence → **shipped the right thing instead**",
+    "script": "Another placeholder — use the Add Story button to replace these with your own. A good story here has real friction (not just \"we eventually agreed\"), a specific thing you did or said, and a result you can point to. Delete these two examples once you've added a few of your own."
+  }
+]

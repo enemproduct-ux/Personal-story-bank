@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Story Bank</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="top-text">
+      <div class="eyebrow">Personal Story Bank</div>
+      <h1 id="app-title">Story Bank</h1>
+      <p class="sub">Your behavioral interview stories, tagged by question type and searchable by keyword — from anywhere, on any device.</p>
+    </div>
+    <div class="account" id="account" hidden>
+      <span id="account-email"></span>
+      <button class="btn small ghost" id="sign-out">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Signed-out state -->
+  <section id="auth-section">
+    <div class="auth-card">
+      <h2 id="auth-title">Sign in</h2>
+      <p class="hint">Your data is private to your account — no one else can read or write it.</p>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password">
+      </div>
+      <div class="auth-actions">
+        <button class="btn primary" id="sign-in">Sign in</button>
+        <button class="btn" id="sign-up">Create account</button>
+      </div>
+      <p class="auth-msg" id="auth-msg"></p>
+      <p class="hint" id="setup-hint" hidden>Haven't set this up yet? Copy <code>config.example.js</code> to <code>config.js</code> and add your Supabase project's URL and anon key — see the README.</p>
+    </div>
+  </section>
+
+  <!-- Signed-in state -->
+  <section id="app-section" hidden>
+    <div class="controls">
+      <div class="search-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search" type="text" placeholder="Search a word from the question… e.g. “conflict”, “data”, “mistake”" autocomplete="off">
+        <button id="clear-search" type="button" aria-label="Clear search">clear</button>
+      </div>
+      <div class="tags" id="tagbar" role="group" aria-label="Filter by category"></div>
+      <div class="toolbar">
+        <div id="count"></div>
+        <div class="toolbar-actions">
+          <button class="btn small" id="btn-import">Import JSON</button>
+          <button class="btn small" id="btn-export">Export JSON</button>
+          <button class="btn small primary" id="btn-add">+ Add story</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="deck" id="deck"></div>
+    <div class="empty" id="empty" hidden>
+      No story matches that. <a href="#" id="empty-add-link">Add your first story</a> or clear the search.
+    </div>
+  </section>
+
+  <footer>
+    Open source — clone this repo to build your own story bank. Stories live in your own private Supabase project.
+  </footer>
+</div>
+
+<input type="file" id="import-file" accept="application/json" hidden>
+
+<!-- Add / edit modal -->
+<div class="modal-backdrop" id="modal-backdrop" hidden>
+  <div class="modal">
+    <h2 id="modal-title">Add a story</h2>
+    <p class="hint">Wrap 3–5 words in <code>**double asterisks**</code> to highlight them as glance-anchors when you're mid-answer.</p>
+
+    <div class="field">
+      <label for="f-title">Title</label>
+      <input type="text" id="f-title" placeholder="e.g. The metric nobody trusted">
+    </div>
+    <div class="field">
+      <label for="f-tags">Categories</label>
+      <input type="text" id="f-tags" placeholder="Discovery, Stakeholder Conflict">
+      <div class="tag-input-hint">Comma-separated. New categories are created automatically.</div>
+    </div>
+    <div class="field">
+      <label for="f-answers">Answers questions like…</label>
+      <input type="text" id="f-answers" placeholder="a metric you owned and moved · a time data changed your mind">
+    </div>
+    <div class="field">
+      <label for="f-anchor">Quick-glance anchor (one line)</label>
+      <textarea id="f-anchor" placeholder="situation → tension → **key action** → **result**"></textarea>
+    </div>
+    <div class="field">
+      <label for="f-script">Full ~2 minute spoken answer</label>
+      <textarea id="f-script" style="min-height:160px" placeholder="Write it the way you'd actually say it out loud…"></textarea>
+    </div>
+
+    <p class="auth-msg error" id="modal-msg"></p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel">Cancel</button>
+      <button class="btn danger" id="modal-delete" hidden>Delete</button>
+      <button class="btn primary" id="modal-save">Save story</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js" onerror="console.warn('config.js not found — copy config.example.js to config.js first')"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
