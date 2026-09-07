@@ -393,15 +393,23 @@
     card.appendChild(summary);
     card.appendChild(body);
 
+    // Closed <details> elements hide every child except <summary> — so the
+    // date badge can't live inside the card itself, or it vanishes whenever
+    // the card is collapsed. Wrap card + badge in a plain positioned div
+    // instead, which isn't subject to that native collapsing behavior.
+    var wrap = document.createElement("div");
+    wrap.className = "card-wrap";
+    wrap.appendChild(card);
+
     if (story.occurred_on) {
       var when = document.createElement("span");
       when.className = "occurred";
       when.textContent = monthLabel(story.occurred_on);
       when.title = "When this story took place (not when it was added)";
       card.classList.add("has-date");
-      card.appendChild(when);
+      wrap.appendChild(when);
     }
-    return card;
+    return wrap;
   }
 
   searchEl.addEventListener("input", render);

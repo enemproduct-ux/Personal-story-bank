@@ -158,13 +158,16 @@ textarea{ resize:vertical; min-height:90px; line-height:1.5; }
 .toolbar-actions{ display:flex; gap:8px; }
 
 .deck{ display:flex; flex-direction:column; gap:10px; }
-.card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; overflow:hidden; position:relative; }
+.card-wrap{ position:relative; }
+.card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
 .card[hidden]{ display:none; }
 
 /* When the story occurred — pinned to the card's bottom-right so it shows
-   in both the collapsed and expanded states. */
+   in both the collapsed and expanded states. Lives outside the <details>
+   card itself: closed <details> elements hide every child except
+   <summary>, which would otherwise make this vanish when collapsed. */
 .occurred{
-  position:absolute; right:12px; bottom:8px;
+  position:absolute; right:12px; bottom:8px; z-index:1;
   font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:.03em;
   color:var(--ink-soft); background:var(--tag-bg); padding:2px 8px; border-radius:99px;
 }
