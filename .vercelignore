@@ -1,0 +1,11 @@
+# Vercel upload rules (overrides .gitignore for deploys).
+# config.js IS uploaded on purpose — the app needs it, and the Supabase
+# anon key is safe to ship (data is protected by RLS + login).
+.git
+.DS_Store
+my-stories-import.json
+story-bank-export.json
+example-stories.json
+schema.sql
+LICENSE
+README.md

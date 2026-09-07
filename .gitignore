@@ -7,3 +7,5 @@ story-bank-export.json
 
 # macOS
 .DS_Store
+.vercel
+.env*
